@@ -1,37 +1,66 @@
 var View = function () {
-    this.car = document.querySelector('.car');
     this.scene = document.querySelector('.mainScene');
-    this.score = document.querySelector('.score');
-    this.end = document.getElementsByClassName("end")[0];
+    this.context = this.scene.getContext("2d");
+    this.scene.height = SCREEN_HEIGHT;
+    this.scene.width = SCREEN_WIDTH;
+
+    this.context.fillStyle = "indigo";
+    this.context.fillRect(65, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+
+    this.context.fillStyle = 'blue';
+    carModel.objs.car.x = SCREEN_WIDTH / 2;
+    carModel.objs.car.y = SCREEN_HEIGHT - CAR_HEIGHT;
+    this.context.fillRect(carModel.objs.car.x, carModel.objs.car.y, CAR_WIDTH, CAR_HEIGHT);
+
+    this.sceneScore = document.querySelector('.score');
+    this.contextScore = this.sceneScore.getContext("2d");
+    this.sceneScore.height = 100;
+    this.sceneScore.width = SCREEN_WIDTH;
+    this.contextScore.fillStyle = 'purple';
+    this.contextScore.textAlign = 'start';
+    this.contextScore.font = "5em Verdana";
+    DSTEP = 70;
     this.onKeyDownEvent = null;
 };
+
 View.prototype.render = function (objs) {
-    this.car.style.left = 'calc(50% + ' + objs.car.x + 'px)';
-    this.car.style.top = 'calc(83.5% + ' + objs.car.y + 'px)';
-    this.score.innerHTML = KILL + '&nbsp' + LIFES + '&#x2665';
+
+    this.context.clearRect(carModel.objs.car.x - 15, carModel.objs.car.y, CAR_WIDTH + 30, CAR_HEIGHT);
+
+    this.context.fillStyle = "indigo";
+    if (carModel.objs.car.x < LEFT_BORDER + CAR_WIDTH / 2) this.context.fillRect(carModel.objs.car.x + 20, carModel.objs.car.y, CAR_WIDTH + 30, CAR_HEIGHT);
+    else this.context.fillRect(carModel.objs.car.x - 15, carModel.objs.car.y, CAR_WIDTH + 30, CAR_HEIGHT);
+
+   // this.context.fillStyle = 'rgb(0,162,232)';
+   // this.context.fillRect(carModel.objs.car.x + STEP, carModel.objs.car.y, CAR_WIDTH, CAR_HEIGHT);
+
+};
+View.prototype.renderScore = function () {
+    if (FLAG == false) {
+        this.contextScore.clearRect(0, 0, SCREEN_WIDTH, 100);
+        this.contextScore.fillText(KILL + ' ' + LIFES + ' lifes ', SCREEN_WIDTH / 2.5, 90);
+    }
+
 };
 View.prototype.renderEnd = function () {
-    this.end.innerHTML = this.end.innerHTML + '&nbsp' + SCORE + 'point';
+    this.contextScore.clearRect(0, 0, SCREEN_WIDTH, 100);
+    this.contextScore.fillText(' END ' + SCORE + ' points ', SCREEN_WIDTH / 3, 90);
 };
 
 View.prototype.clearCube = function (el) {
-    el.setAttribute('hidden', 'true');
-};
-
-View.prototype.renderScore = function () {
-    this.score.innerHTML = KILL + '&nbsp' + LIFES + '&#x2665';
+    this.context.clearRect(el.x, el.y, el.width, el.height);
 };
 
 var appendInterval;
 
 View.prototype.init = function () {
     document.addEventListener('keydown', this.onKeyDownEvent);
-    LEFT_BORDER = -700;
-    RIGHT_BORDER = 670;
     this.setAppendInterval();
     this.setScoreInterval();
+    this.setCarInterval();
     carModel.cubeObjs.forEach(el => {
-        this.renderCube(el);
+        this.renderCube(el, carModel.objs.car);
     });
 };
 
@@ -46,6 +75,19 @@ View.prototype.setAppendInterval = function () {
     }, TIME_INTERVAL);
 };
 
+View.prototype.setCarInterval = function () {
+    let carInterval = setInterval(function () {
+        if (LIFES <= 0)
+            clearInterval(carInterval);
+        else {
+            context = this.carView.scene.getContext("2d");
+           // this.context.clearRect(carModel.objs.car.x-STEP, carModel.objs.car.y, CAR_WIDTH, CAR_HEIGHT);
+            this.context.fillStyle = 'rgb(0,162,232)';
+            this.context.fillRect(carModel.objs.car.x, carModel.objs.car.y, CAR_WIDTH, CAR_HEIGHT);
+        }
+    }, 1);
+};
+
 
 View.prototype.setScoreInterval = function () {
     let scoreTimer = setInterval(function () {
@@ -57,24 +99,31 @@ View.prototype.setScoreInterval = function () {
         }
     }, SCORE_SPEED);
 };
-
-View.prototype.renderCube = function (el) {
-
-    let cube = document.createElement('div');
-    cube.className = 'cube';
-    cube.style.width = el.size + 'px';
-    cube.style.height = el.size + 'px';
-    cube.style.left = el.x + 'px';
-    cube.style.top = el.y + 'px';
-    cube.style.background = 'rgba(' + el.color[0] + ',' + el.color[1] + ',' + el.color[2] + ',' + el.color[3] + ')';
-    cube.style.opacity = 1;
-    this.scene.appendChild(cube);
-
+var tmp;
+View.prototype.renderCube = function (el, machine) {
+    var color = this.context.fillStyle = 'rgba(' + el.color[0] + ',' + el.color[1] + ',' + el.color[2] + ',' + el.color[3] + ')';
+    this.context.fillRect(el.x + DSTEP, el.y, el.size, el.size);
     let Timer = setInterval(function () {
-        cube.style.top = (parseInt(cube.style.top) + CUBE_STEP) + 'px';
-        if ((parseInt(cube.style.top) + CUBE_HEIGHT) > SCREEN_HEIGHT) clearInterval(Timer);
-        carModel.walkingCube(cube);
+        context = this.carView.scene.getContext("2d");
+
+        //this.context.fillStyle = 'rgb(0,162,232)';
+        //this.context.fillRect(carModel.objs.car.x, carModel.objs.car.y, CAR_WIDTH, CAR_HEIGHT);
+
+        context.clearRect(el.x + DSTEP - 1, el.y, el.size + 5, el.size);
+        tmp = context.fillStyle;
+        carView.renderScreen(context, el);
+        context.fillStyle = color;
+        el.y = el.y + CUBE_STEP;
+        context.fillRect(el.x + DSTEP, el.y, el.size, el.size);
+        carModel.walkingCube1(el, machine);
+
     }, TIMER_SPEED);
 
 };
+
+View.prototype.renderScreen = function (context, el) {
+    context.fillStyle = "indigo";
+    context.fillRect(el.x + 68, el.y, el.size + 7, el.size);
+}
+
 var carView = new View();
