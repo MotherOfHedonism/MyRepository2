@@ -1,37 +1,63 @@
 var View = function () {
-    this.car = document.querySelector('.car');
     this.scene = document.querySelector('.mainScene');
-    this.score = document.querySelector('.score');
-    this.end = document.getElementsByClassName("end")[0];
+
+    var car = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+    car.setAttribute('width', CAR_WIDTH);
+    car.setAttribute('height', CAR_HEIGHT);
+    car.setAttribute('x', SCREEN_WIDTH / 2);
+    car.setAttribute('y', SCREEN_HEIGHT - CAR_HEIGHT);
+    carModel.objs.car.x = SCREEN_WIDTH / 2;
+    carModel.objs.car.y = SCREEN_HEIGHT - CAR_HEIGHT;
+    car.setAttribute('class', 'car');
+    car.setAttribute('style', 'fill: rgb(0,162,232)');
+    this.scene.appendChild(car);
+    this.car = document.querySelector('.car');
+
+    this.score = document.querySelector('.scoreText');
+    this.score.setAttribute('width', SCREEN_WIDTH);
+    this.score.setAttribute('height', 100);
+    this.newText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    this.newText.setAttributeNS(null, "x", SCREEN_WIDTH / 2.3);
+    this.newText.setAttributeNS(null, "y", 90);
+    this.newText.setAttributeNS(null, "width", "100%");
+    this.newText.setAttributeNS(null, "height", "100%");
+    this.newText.setAttributeNS(null, "font-size", "90");
+    this.newText.setAttributeNS(null, 'style', 'fill: purple');
+    this.newText.setAttributeNS(null, 'text-align', 'center');
+
     this.onKeyDownEvent = null;
 };
 View.prototype.render = function (objs) {
-    this.car.style.left = 'calc(50% + ' + objs.car.x + 'px)';
-    this.car.style.top = 'calc(83.5% + ' + objs.car.y + 'px)';
-    this.score.innerHTML = KILL + '&nbsp' + LIFES + '&#x2665';
+    // objs.car.x= objs.car.x+STEP;
+    this.car.setAttribute('x', objs.car.x);
+    this.car.setAttribute('y', objs.car.y);
+    this.newText.textContent = KILL + ' ' + LIFES + ' lives';
+    this.score.appendChild(this.newText);
 };
 View.prototype.renderEnd = function () {
-    this.end.innerHTML = this.end.innerHTML + '&nbsp' + SCORE + 'point';
+    this.newText.textContent = 'END ' + SCORE + ' points';
+    this.score.appendChild(this.newText);
+    this.scene.remove();
 };
 
 View.prototype.clearCube = function (el) {
-    el.setAttribute('hidden', 'true');
+    this.scene.removeChild(el);
 };
 
 View.prototype.renderScore = function () {
-    this.score.innerHTML = KILL + '&nbsp' + LIFES + '&#x2665';
+    this.newText.textContent = KILL + ' ' + LIFES + ' lives';
 };
 
 var appendInterval;
 
 View.prototype.init = function () {
     document.addEventListener('keydown', this.onKeyDownEvent);
-    LEFT_BORDER = -700;
-    RIGHT_BORDER = 670;
+    LEFT_BORDER = 0;
+    RIGHT_BORDER = SCREEN_WIDTH - CAR_WIDTH;
     this.setAppendInterval();
     this.setScoreInterval();
     carModel.cubeObjs.forEach(el => {
-        this.renderCube(el);
+        this.renderCube(el, carModel.objs.car);
     });
 };
 
@@ -58,21 +84,20 @@ View.prototype.setScoreInterval = function () {
     }, SCORE_SPEED);
 };
 
-View.prototype.renderCube = function (el) {
-
-    let cube = document.createElement('div');
-    cube.className = 'cube';
-    cube.style.width = el.size + 'px';
-    cube.style.height = el.size + 'px';
-    cube.style.left = el.x + 'px';
-    cube.style.top = el.y + 'px';
-    cube.style.background = 'rgba(' + el.color[0] + ',' + el.color[1] + ',' + el.color[2] + ',' + el.color[3] + ')';
-    cube.style.opacity = 1;
+View.prototype.renderCube = function (el, machine) {
+    var cube = document.createElementNS("http://www.w3.org/2000/svg", 'rect');
+    cube.setAttribute('width', el.size);
+    cube.setAttribute('height', el.size);
+    cube.setAttribute('x', el.x);
+    cube.setAttribute('y', el.y);
+    cube.setAttribute('style', 'fill:rgba(' + el.color[0] + ',' + el.color[1] + ',' + el.color[2] + ',' + el.color[3] + ')');
     this.scene.appendChild(cube);
 
+
     let Timer = setInterval(function () {
-        cube.style.top = (parseInt(cube.style.top) + CUBE_STEP) + 'px';
-        if ((parseInt(cube.style.top) + CUBE_HEIGHT) > SCREEN_HEIGHT) clearInterval(Timer);
+        el.y = el.y + CUBE_STEP;
+        cube.setAttribute('y', el.y);
+        if ((parseInt(cube.style.top) + CUBE_HEIGHT) > SCREEN_HEIGHT||LIFES<=0) clearInterval(Timer);
         carModel.walkingCube(cube);
     }, TIMER_SPEED);
 
