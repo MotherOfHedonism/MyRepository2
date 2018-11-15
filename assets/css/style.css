@@ -1,0 +1,46 @@
+.mainScene {
+    position: relative;
+    width: 1400px;
+    height: 600px;
+    margin: 0 auto;
+    background:indigo;
+}
+
+.car{                                         
+    position: absolute;
+    width: 30px;
+    height: 90px;
+    background-color: aqua;
+    background-repeat:no-repeat;
+    background-size: 100% 100%;
+    z-index: 2;
+}
+
+.cube{
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color:rgb(46, 1, 58); 
+    z-index: 1;
+}
+
+h1#neon-tubing {
+    margin-top: 0px;
+	text-align: center;
+	font-family: Neon80sRegular, sans-serif;
+	font-size: 5em;
+	letter-spacing: 1rem;
+    background-size: cover;
+    color: purple;
+}
+
+.score, .end
+{
+    margin-left:80px;
+}
+.score
+{
+    padding-top: 42.5%;
+}
